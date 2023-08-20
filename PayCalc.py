@@ -1,58 +1,63 @@
+
+import random
+import string
 import tkinter as tk
 from tkinter import ttk
-from openpyxl import load_workbook
 
-class PayrollApp:
+class PasswordGeneratorApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Payroll Calculator")
+        self.root.title("Password Genie")
 
-        self.total_hours = 0
-        self.total_pay = 0
-        self.tax_amount = 0
+        # Create a custom style
+        self.style = ttk.Style()
+        
+        # Configure the style for labels (foreground color, font)
+        self.style.configure("TLabel", foreground="purple", font=("Helvetica", 12, "bold"))
+        
+        # Configure the style for buttons (foreground color, background color, font)
+        self.style.configure("TButton", foreground="black", background="grey", font=("Helvetica", 12, "bold"))
+        
+        # Initialize the GUI components
+        self.init_components()
 
-        self.load_excel_button = ttk.Button(root, text="Load Excel", command=self.load_excel)
-        self.load_excel_button.pack(pady=10)
+    def init_components(self):
+        # Label for password length input
+        self.length_label = ttk.Label(self.root, text="Password Length:")
+        self.length_label.pack(pady=10)
 
-        self.result_label = tk.Label(root, text="Results:")
-        self.result_label.pack()
+        # Entry widget to input password length
+        self.length_entry = ttk.Entry(self.root)
+        self.length_entry.pack()
 
-        self.hours_label = tk.Label(root, text="")
-        self.hours_label.pack()
+        # Configure a style for the "Generate Password" button
+        self.style.configure("Generate.TButton", background="orange")
 
-        self.pay_label = tk.Label(root, text="")
-        self.pay_label.pack()
+        # Button to generate password
+        self.generate_button = ttk.Button(self.root, text="Generate Password", style="Generate.TButton", command=self.generate_password)
+        self.generate_button.pack(pady=10)
 
-        self.tax_label = tk.Label(root, text="")
-        self.tax_label.pack()
+        # Configure a style for the password display label
+        self.style.configure("PasswordLabel.TLabel", foreground="purple", font=("Arial", 14))
 
-    def load_excel(self):
+        # Label to display generated password
+        self.password_label = ttk.Label(self.root, text="", style="PasswordLabel.TLabel")
+        self.password_label.pack()
+
+    def generate_password(self):
         try:
-            workbook = load_workbook("excel-sheet.xlsx")
-            sheet = workbook.active
+            password_length = int(self.length_entry.get())
+            if password_length <= 0:
+                self.password_label.config(text="Invalid length")
+                return
 
-            self.total_hours = 0
-            self.total_pay = 0
-
-            for row in sheet.iter_rows(values_only=True):
-                if len(row) >= 2:
-                    hours, pay = row[0], row[1]
-                    self.total_hours += hours
-                    self.total_pay += pay
-
-            self.tax_amount = self.total_pay * 0.2
-
-            self.update_results()
-        except Exception as e:
-            self.result_label.config(text="Error loading Excel sheet")
-
-    def update_results(self):
-        self.result_label.config(text="Results:")
-        self.hours_label.config(text=f"Total Hours Worked: {self.total_hours}")
-        self.pay_label.config(text=f"Total Pay Accumulated: {self.total_pay}")
-        self.tax_label.config(text=f"Tax Amount to Save (20%): {self.tax_amount:.2f}")
+            characters = string.ascii_letters + string.digits + string.punctuation
+            password = ''.join(random.choice(characters) for _ in range(password_length))
+            self.password_label.config(text="Generated Password: " + password)
+        except ValueError:
+            self.password_label.config(text="Invalid length")
 
 if __name__ == "__main__":
     root = tk.Tk()
-    app = PayrollApp(root)
+    app = PasswordGeneratorApp(root)
     root.mainloop()
